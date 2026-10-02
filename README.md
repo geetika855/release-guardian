@@ -23,6 +23,28 @@ host namespaces, secrets, HA) and outputs:
 python -m src.cli review <path> --json   # machine-readable, for CI gates
 ```
 
+## HTTP API
+
+```bash
+uvicorn src.api:app --port 8000
+```
+
+- `GET /health` → `{"status": "ok", "checks": 8, "version": "0.2.0"}`
+- `POST /review` with `{"yaml": "<multi-doc YAML string>"}` → scored report:
+
+```bash
+curl -s localhost:8000/review \
+  -H 'Content-Type: application/json' \
+  -d "{\"yaml\": $(python -c "import json; print(json.dumps(open('fixtures/risky/deployment.yaml').read()))")}" \
+  | python -m json.tool | head -12
+```
+
+## Docker
+
+```bash
+docker compose up --build   # API on http://localhost:8000
+```
+
 ## Checks
 
 | ID | Severity | What it flags |

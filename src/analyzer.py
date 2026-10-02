@@ -80,14 +80,23 @@ def load_resources(path: Path) -> tuple[list[dict], int]:
     return resources, file_count
 
 
-def analyze(path: Path) -> Report:
-    """Run every check against every workload resource under path."""
-    resources, file_count = load_resources(Path(path))
+def analyze_resources(resources: list[dict]) -> Report:
+    """Run every check against an in-memory list of resource dicts."""
     findings: list[Finding] = []
+    scanned = 0
     for resource in resources:
         podspec = _podspec(resource)
         if podspec is None:
             continue
+        scanned += 1
         for check in ALL_CHECKS:
             findings.extend(check(resource, podspec))
-    return Report(files_scanned=file_count, resources_scanned=len(resources), findings=findings)
+    return Report(files_scanned=0, resources_scanned=scanned, findings=findings)
+
+
+def analyze(path: Path) -> Report:
+    """Run every check against every workload resource under path."""
+    resources, file_count = load_resources(Path(path))
+    report = analyze_resources(resources)
+    report.files_scanned = file_count
+    return report

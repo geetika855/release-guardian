@@ -1,2 +1,5 @@
 pyyaml
 pytest
+fastapi
+uvicorn
+httpx
